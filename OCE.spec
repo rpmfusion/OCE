@@ -4,7 +4,7 @@
 
 Name:           OCE
 Version:        0.8.0
-Release:        2%{?relcan:.rc%{relcan}}%{?dist}
+Release:        3%{?relcan:.rc%{relcan}}%{?dist}
 Summary:        OpenCASCADE Community Edition
 
 License:        Open CASCADE Technology Public License
@@ -17,9 +17,10 @@ Patch0:         OCE-0.8.0-env.patch
 
 Source1:        DRAWEXE.1
 Source2:        opencascade-draw.desktop
-Source3:        oce-96.png
-Source4:        oce-48.png
-Source5:        oce-32.png
+Source3:        oce-256.png
+Source4:        oce-128.png
+Source5:        oce-64.png
+Source6:        oce-48.png
 
 # Utilities
 BuildRequires:  cmake
@@ -159,9 +160,11 @@ desktop-file-install                           \
     %{SOURCE2}
 
 # Install icons
-install -Dm 0644 %{SOURCE3} %{buildroot}%{_datadir}/icons/hicolor/96x96/apps/oce.png
-install -Dm 0644 %{SOURCE4} %{buildroot}%{_datadir}/icons/hicolor/48x48/apps/oce.png
-install -Dm 0644 %{SOURCE5} %{buildroot}%{_datadir}/icons/hicolor/32x32/apps/oce.png
+for size in 256 128 64 48; do
+    icon=%{_sourcedir}/oce-${size}.png
+    install -Dm 0644 $icon \
+        %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/oce.png
+done
 
 
 %post foundation -p /sbin/ldconfig
@@ -288,6 +291,9 @@ fi
 
 
 %changelog
+* Wed May 02 2012 Richard Shaw <hobbes1069@gmail.com> - 0.8.0-3
+- Update icons.
+
 * Mon Dec 19 2011 Richard Shaw <hobbes1069@gmail.com> - 0.8.0-2
 - Build against OpenMP for parallelization.
 - Fix problem with OCE overriding build flags.
