@@ -2,6 +2,11 @@
 %global githash2 de78904
 #global relcan 1
 
+# Use newer cmake on EL-6.
+%if 0%{?el6}
+%global cmake %cmake28
+%endif
+
 Name:           OCE
 Version:        0.8.0
 Release:        3%{?relcan:.rc%{relcan}}%{?dist}
@@ -23,7 +28,11 @@ Source5:        oce-64.png
 Source6:        oce-48.png
 
 # Utilities
+%if 0%{?el6}
+BuildRequires:  cmake28
+%else
 BuildRequires:  cmake
+%endif
 BuildRequires:  desktop-file-utils
 # Librraies
 BuildRequires:  xorg-x11-proto-devel
