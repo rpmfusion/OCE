@@ -7,7 +7,7 @@
 
 Name:           OCE
 Version:        0.11
-Release:        1%{?relcan:.rc%{relcan}}%{?dist}
+Release:        2%{?relcan:.rc%{relcan}}%{?dist}
 Summary:        OpenCASCADE Community Edition
 
 License:        Open CASCADE Technology Public License
@@ -44,6 +44,9 @@ BuildRequires:  gl2ps-devel
 BuildRequires:  libgomp
 BuildRequires:  tcl-devel
 BuildRequires:  tk-devel
+%ifnarch %arm
+BuildRequires:  tbb-devel
+%endif
 
 
 %description
@@ -302,6 +305,9 @@ fi
 
 
 %changelog
+* Mon Feb 18 2013 Richard Shaw <hobbes1069@gmail.com> - 0.11-2
+- Add tbb-devel as build requirement.
+
 * Fri Feb 15 2013 Richard Shaw <hobbes1069@gmail.com> - 0.11-1
 - Update to latest upstream release.
 
