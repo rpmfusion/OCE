@@ -1,19 +1,22 @@
-%global githash1 gc4c7d83
-%global githash2 de78904
 #global relcan 1
 
+# Use newer cmake on EL-6.
+%if 0%{?el6}
+%global cmake %cmake28
+%endif
+
 Name:           OCE
-Version:        0.8.0
-Release:        3%{?relcan:.rc%{relcan}}%{?dist}
+Version:        0.11
+Release:        2%{?relcan:.rc%{relcan}}%{?dist}
 Summary:        OpenCASCADE Community Edition
 
 License:        Open CASCADE Technology Public License
 URL:            https://github.com/tpaviot/oce
 # Github source! Archive was generated on the fly with the following URL:
-# https://github.com/tpaviot/oce/tarball/OCE-0.8.0
-Source0:        tpaviot-oce-%{name}-%{version}%{?relcan:-rc%{relcan}}-0-%{githash1}.tar.gz
+# https://github.com/tpaviot/oce/archive/OCE-0.11.tar.gz
+Source0:        oce-%{name}-%{version}%{?relcan:-rc%{relcan}}.tar.gz
 
-Patch0:         OCE-0.8.0-env.patch
+Patch0:         OCE-0.11-freeimage.patch
 
 Source1:        DRAWEXE.1
 Source2:        opencascade-draw.desktop
@@ -23,18 +26,27 @@ Source5:        oce-64.png
 Source6:        oce-48.png
 
 # Utilities
+%if 0%{?el6}
+BuildRequires:  cmake28
+%else
 BuildRequires:  cmake
+%endif
 BuildRequires:  desktop-file-utils
-# Librraies
+# Libraries
 BuildRequires:  xorg-x11-proto-devel
 BuildRequires:  mesa-libGL-devel mesa-libGLU-devel
 BuildRequires:  libXmu-devel
-BuildRequires:  ftgl-devel 
+BuildRequires:  ftgl-devel
+%if ! 0%{?el6}
 BuildRequires:  freeimage-devel
+%endif
 BuildRequires:  gl2ps-devel
 BuildRequires:  libgomp
 BuildRequires:  tcl-devel
 BuildRequires:  tk-devel
+%ifarch %{ix86} x86_64 ia64 ppc ppc64
+BuildRequires:  tbb-devel
+%endif
 
 
 %description
@@ -120,8 +132,8 @@ OpenCASCADE CAE platform library development files
 
 
 %prep
-%setup -q -n tpaviot-oce-%{githash2}
-%patch0 -p1
+%setup -q -n oce-%{name}-%{version}
+%patch0 -p1 -b .cmake_freeimage
 
 # Convert files to utf8
 iconv --from=ISO-8859-1 --to=UTF-8 LICENSE.txt > LICENSE.txt.new && \
@@ -131,13 +143,14 @@ mv LICENSE.txt.new LICENSE.txt
 
 %build
 rm -rf build && mkdir build && pushd build
+# Stop excessive linking that cmake projects are prone to. 
 LDFLAGS="-Wl,--as-needed";export LDFLAGS
 %cmake -DOCE_BUILD_TYPE=RelWithDebInfo \
        -DOCE_INSTALL_PREFIX=%{_prefix} \
        -DOCE_INSTALL_LIB_DIR=%{_lib} \
        -DOCE_WITH_FREEIMAGE=ON \
        -DOCE_WITH_GL2PS=ON \
-       -DOCE_MULTITHREAD_LIBRARY:STRING=OPENMP \
+       -DOCE_MULTITHREAD_LIBRARY:STRING=TBB \
        -DOCE_DRAW=on \
        ../
 
@@ -268,7 +281,7 @@ fi
 %{_libdir}/libTKStdSchema.so.*
 
 %files draw
-# Draw
+# Draw Libraries
 %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKDraw.so.*
 %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKTopTest.so.*
 %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKViewerTest.so.*
@@ -276,6 +289,7 @@ fi
 %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKDCAF.so.*
 %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKXDEDRAW.so.*
 %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKTObjDRAW.so.*
+%{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/libTKQADraw.so.*
 # DRAWEXE application
 %{_bindir}/DRAWEXE
 %{_mandir}/man1/DRAWEXE.1.gz
@@ -286,11 +300,17 @@ fi
 %doc examples
 %{_includedir}/*
 %{_libdir}/*.so
-%exclude %{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/*.so.*
-%{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/
+%{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/*.so
+%{_libdir}/oce-%{version}%{?relcan:-rc%{relcan}}/*.cmake
 
 
 %changelog
+* Mon Feb 18 2013 Richard Shaw <hobbes1069@gmail.com> - 0.11-2
+- Add tbb-devel as build requirement.
+
+* Fri Feb 15 2013 Richard Shaw <hobbes1069@gmail.com> - 0.11-1
+- Update to latest upstream release.
+
 * Wed May 02 2012 Richard Shaw <hobbes1069@gmail.com> - 0.8.0-3
 - Update icons.
 
