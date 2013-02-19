@@ -44,7 +44,7 @@ BuildRequires:  gl2ps-devel
 BuildRequires:  libgomp
 BuildRequires:  tcl-devel
 BuildRequires:  tk-devel
-%ifnarch %arm
+%ifarch %{ix86} x86_64 ia64 ppc ppc64
 BuildRequires:  tbb-devel
 %endif
 
