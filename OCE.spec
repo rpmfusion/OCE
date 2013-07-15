@@ -6,8 +6,8 @@
 %endif
 
 Name:           OCE
-Version:        0.11
-Release:        2%{?relcan:.rc%{relcan}}%{?dist}
+Version:        0.12
+Release:        1%{?relcan:.rc%{relcan}}%{?dist}
 Summary:        OpenCASCADE Community Edition
 
 License:        Open CASCADE Technology Public License
@@ -44,7 +44,7 @@ BuildRequires:  gl2ps-devel
 BuildRequires:  libgomp
 BuildRequires:  tcl-devel
 BuildRequires:  tk-devel
-%ifarch %{ix86} x86_64 ia64 ppc ppc64
+%ifnarch %arm
 BuildRequires:  tbb-devel
 %endif
 
@@ -133,7 +133,7 @@ OpenCASCADE CAE platform library development files
 
 %prep
 %setup -q -n oce-%{name}-%{version}
-%patch0 -p1 -b .cmake_freeimage
+#patch0 -p1 -b .cmake_freeimage
 
 # Convert files to utf8
 iconv --from=ISO-8859-1 --to=UTF-8 LICENSE.txt > LICENSE.txt.new && \
@@ -305,6 +305,9 @@ fi
 
 
 %changelog
+* Tue Jul 15 2013 Richard Shaw <hobbes1069@gmail.com> - 0.12-1
+- Update to latest upstream release as it adds some performance enhancements.
+
 * Mon Feb 18 2013 Richard Shaw <hobbes1069@gmail.com> - 0.11-2
 - Add tbb-devel as build requirement.
 
