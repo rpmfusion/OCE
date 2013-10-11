@@ -6,17 +6,15 @@
 %endif
 
 Name:           OCE
-Version:        0.11
-Release:        2%{?relcan:.rc%{relcan}}%{?dist}
+Version:        0.13
+Release:        1%{?relcan:.rc%{relcan}}%{?dist}
 Summary:        OpenCASCADE Community Edition
 
 License:        Open CASCADE Technology Public License
 URL:            https://github.com/tpaviot/oce
 # Github source! Archive was generated on the fly with the following URL:
-# https://github.com/tpaviot/oce/archive/OCE-0.11.tar.gz
-Source0:        oce-%{name}-%{version}%{?relcan:-rc%{relcan}}.tar.gz
-
-Patch0:         OCE-0.11-freeimage.patch
+# https://github.com/tpaviot/oce/archive/OCE-0.13.tar.gz
+Source0:        https://github.com/tpaviot/oce/archive/%{name}-%{version}%{?relcan:-rc%{relcan}}.tar.gz
 
 Source1:        DRAWEXE.1
 Source2:        opencascade-draw.desktop
@@ -44,8 +42,12 @@ BuildRequires:  gl2ps-devel
 BuildRequires:  libgomp
 BuildRequires:  tcl-devel
 BuildRequires:  tk-devel
-%ifarch %{ix86} x86_64 ia64 ppc ppc64
+%ifnarch %arm
+  %if 0%{?rhel}
+BuildRequires:  openmpi-devel
+  %else
 BuildRequires:  tbb-devel
+  %endif
 %endif
 
 
@@ -133,7 +135,6 @@ OpenCASCADE CAE platform library development files
 
 %prep
 %setup -q -n oce-%{name}-%{version}
-%patch0 -p1 -b .cmake_freeimage
 
 # Convert files to utf8
 iconv --from=ISO-8859-1 --to=UTF-8 LICENSE.txt > LICENSE.txt.new && \
@@ -150,8 +151,13 @@ LDFLAGS="-Wl,--as-needed";export LDFLAGS
        -DOCE_INSTALL_LIB_DIR=%{_lib} \
        -DOCE_WITH_FREEIMAGE=ON \
        -DOCE_WITH_GL2PS=ON \
+%if 0%{?rhel}
+       -DOCE_MULTITHREAD_LIBRARY:STRING=OPENMP \
+%else
        -DOCE_MULTITHREAD_LIBRARY:STRING=TBB \
-       -DOCE_DRAW=on \
+%endif
+       -DOCE_DRAW=ON \
+       -DOCE_TESTING=ON \
        ../
 
 make %{?_smp_mflags}
@@ -160,6 +166,7 @@ make %{?_smp_mflags}
 %install
 pushd build
 make install DESTDIR=%{buildroot}
+popd
 
 # Remove empty .gxx files
 find %{buildroot}%{_includedir} -name "*.gxx" -exec rm -f {} \;
@@ -178,6 +185,11 @@ for size in 256 128 64 48; do
     install -Dm 0644 $icon \
         %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/oce.png
 done
+
+
+%check
+pushd build/test
+make test
 
 
 %post foundation -p /sbin/ldconfig
@@ -251,7 +263,6 @@ fi
 %files visualization
 # Visualization Dependents
 %{_libdir}/libTKService.so.*
-%{_libdir}/libTKV2d.so.*
 %{_libdir}/libTKV3d.so.*
 # Visualization
 %{_libdir}/libTKOpenGl.so.*
@@ -305,6 +316,12 @@ fi
 
 
 %changelog
+* Thu Oct 10 2013 Richard Shaw <hobbes1069@gmail.com. - 0.13-1
+- Update to latest upstream release.
+
+* Mon Jul 15 2013 Richard Shaw <hobbes1069@gmail.com> - 0.12-1
+- Update to latest upstream release as it adds some performance enhancements.
+
 * Mon Feb 18 2013 Richard Shaw <hobbes1069@gmail.com> - 0.11-2
 - Add tbb-devel as build requirement.
 
