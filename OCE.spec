@@ -43,7 +43,11 @@ BuildRequires:  libgomp
 BuildRequires:  tcl-devel
 BuildRequires:  tk-devel
 %ifnarch %arm
+  %if 0%{?rhel}
+BuildRequires:  openmpi-devel
+  %else
 BuildRequires:  tbb-devel
+  %endif
 %endif
 
 
@@ -147,7 +151,11 @@ LDFLAGS="-Wl,--as-needed";export LDFLAGS
        -DOCE_INSTALL_LIB_DIR=%{_lib} \
        -DOCE_WITH_FREEIMAGE=ON \
        -DOCE_WITH_GL2PS=ON \
+%if 0%{?rhel}
+       -DOCE_MULTITHREAD_LIBRARY:STRING=OPENMP \
+%else
        -DOCE_MULTITHREAD_LIBRARY:STRING=TBB \
+%endif
        -DOCE_DRAW=ON \
        -DOCE_TESTING=ON \
        ../
